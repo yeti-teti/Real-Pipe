@@ -19,7 +19,7 @@ resource "google_container_cluster" "gke-node" {
 
   master_authorized_networks_config {
     cidr_blocks {
-      cidr_block = "0.0.0.0/0"
+      cidr_block = "10.20.0.0/24"
       display_name = "Allowed From Anywhere for Setup"
     }
   }

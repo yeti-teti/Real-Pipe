@@ -55,3 +55,23 @@ resource "google_compute_firewall" "allow_egress_from_private_subnet" {
   target_tags = ["gke-node"]
   direction = "EGRESS"
 }
+
+# Firewall Rule for SSH to Bastion
+resource "google_compute_firewall" "allow_ssh_to_bastion" {
+  name = "${var.project_id}-allow-ssh-to-bastion"
+  network = google_compute_network.vpc.self_link
+
+  allow {
+    protocol = "tcp"
+    ports = ["22"]
+  }
+
+  allow {
+    protocol = "icmp"
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = ["bastion"]
+
+  description = "Allow SSH and ICMP from bastion to GKE nodes"
+}

@@ -1,3 +1,46 @@
+# Bastion resource for GKE
+resource "google_compute_address" "bastion_static_ip"{
+  project = var.project_id
+  name = "${var.project_id}-bastion-static-ip"
+  region = var.region
+}
+
+resource "google_compute_instance" "bastion" {
+  project = var.project_id
+  name = "${var.project_id}-bastion-vm-gke"
+  machine_type = "e2-medium"
+  zone = var.zone
+  
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+    }
+  }
+
+  network_interface {
+    network = google_compute_network.vpc.self_link
+    subnetwork = google_compute_subnetwork.subnet_public.self_link
+    access_config {
+      nat_ip = google_compute_address.bastion_static_ip.address
+    }
+  }
+
+  tags                    = ["bastion"]
+  metadata_startup_script = <<-EOT
+  #!/bin/bash
+  sudo apt-get update
+  sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
+  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+  echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+  sudo apt-get update && sudo apt-get install -y google-cloud-cli kubectl
+  EOT
+
+  service_account {
+    email  = google_service_account.aegis-sa.email
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+  }
+}
+
 resource "google_container_cluster" "gke-node" {
   name = "${var.project_id}-gke"
   location = var.region
@@ -19,8 +62,12 @@ resource "google_container_cluster" "gke-node" {
 
   master_authorized_networks_config {
     cidr_blocks {
-      cidr_block = "10.20.0.0/24"
-      display_name = "Allowed From Anywhere for Setup"
+      cidr_block   = "10.20.0.0/24"
+      display_name = "private-subnet"
+    }
+    cidr_blocks {
+      cidr_block   = google_compute_subnetwork.subnet_public.ip_cidr_range
+      display_name = "public-subnet-for-bastion"
     }
   }
 

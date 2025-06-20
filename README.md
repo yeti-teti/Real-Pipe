@@ -1,5 +1,11 @@
-# Real-Pipe
+# Aegis 
 
-- Distributed, Highly Available, Self-Healing Real-time Analytics Pipeline with Chaos Engineering
+- Real-Time Cyber-Risk & Cloud Anomaly Correlation Detection
+- Ingests real-time CVE announcements and correlates them with internal cloud security logs and cost data to proactively identify systems at risk and detect potential exploits before they become catastrophic.
+- Unified view of external threats mapped directly onto the internal cloud environment
 
-Robust, scalable, and observable system that collects, processes, and provides real-time analytics on a stream of events, demonstrating high availability, automated recovery, and resilience to injected failures.
+- Data Source:
+    - National Vulnerability Database (NVD) API
+        - For real-time feed of all newly published CVEs.
+        - Each CVE has a severity score (CVSS), detailes about the affected software, and reference links.
+    

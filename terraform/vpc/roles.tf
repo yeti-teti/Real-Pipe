@@ -4,8 +4,19 @@ resource "google_service_account" "aegis-sa" {
   display_name = "Aegis Infra"
 }
 
-# IAM Binding for Service Account
+# Dedicated SA for the CVE Ingestor service
+resource "google_service_account" "cve-ingestor" {
+  account_id   = "cve-ingestor-sa"
+  display_name = "CVE Ingestor Service Account"
+}
 
+# Dedicated SA for the Event Processor service
+resource "google_service_account" "event-processor" {
+  account_id   = "event-processor-sa"
+  display_name = "Event Processor Service Account"
+}
+
+# IAM Binding for Service Account
 resource "google_project_iam_binding" "monitoring-viewer" {
   project = var.project_id
   role    = "roles/monitoring.viewer"
@@ -22,6 +33,18 @@ resource "google_project_iam_binding" "artifact-reader" {
   project = var.project_id
   role    = "roles/artifactregistry.reader"
   members = ["serviceAccount:${google_service_account.aegis-sa.email}"]
+}
+
+resource "google_project_iam_binding" "aegis-publisher" {
+  project = var.project_id
+  role    = "roles/pubsub.publisher"
+  members = ["serviceAccount:${google_service_account.cve-ingestor.email}"]
+}
+
+resource "google_project_iam_binding" "aegis-subscriber" {
+  project = var.project_id
+  role    = "roles/pubsub.subscriber"
+  members = ["serviceAccount:${google_service_account.event-processor.email}"]
 }
 
 # resource "google_project_iam_binding" "storage-admin" {

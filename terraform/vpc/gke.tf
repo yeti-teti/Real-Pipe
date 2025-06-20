@@ -24,9 +24,9 @@ resource "google_container_cluster" "gke-node" {
     }
   }
 
-  workload_identity_config {
-    workload_pool = "${var.project_id}.svc.id.goog"
-  }
+  # workload_identity_config {
+  #   workload_pool = "${var.project_id}.svc.id.goog"
+  # }
 
   node_config {
 
